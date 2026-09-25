@@ -162,6 +162,8 @@ body {
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
 }
 .ctrl-btn:disabled { background: #94a3b8; }
 
@@ -182,12 +184,50 @@ body {
   padding-bottom: 18px;
   border-bottom: 1px solid #e2e8f0;
 }
-label { font-weight: bold; margin-bottom: 6px; display: block; }
-input, textarea, select {
+
+.form-group label.field-label {
+  font-weight: bold;
+  font-size: 1em;
+  margin-bottom: 4px;
+  display: block;
+  color: var(--text-dark);
+}
+
+.field-subtext {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  margin: 4px 0 10px 0;
+  line-height: 1.4;
+}
+
+input[type="text"], textarea, select {
   width: 100%;
-  padding: 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
+  font-size: 0.95em;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+textarea { resize: vertical; }
+
+.option-choice {
+  font-weight: normal;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 0.93em;
+  line-height: 1.35;
+}
+
+.option-choice input[type="radio"],
+.option-choice input[type="checkbox"] {
+  width: auto;
+  margin-top: 3px;
+  cursor: pointer;
 }
 
 .submit-btn {
@@ -200,6 +240,7 @@ input, textarea, select {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  margin-top: 10px;
 }
 
 .tab-content { display: none; }
@@ -257,7 +298,7 @@ input, textarea, select {
     </div>
 
     <div id="slide-stage" class="slide-stage">
-      <!-- Slides injected by script.js -->
+      <!-- Slides injected by script -->
     </div>
 
     <div class="deck-controls">
@@ -269,9 +310,9 @@ input, textarea, select {
   <!-- TAB: RESOURCE HUB -->
   <div id="res-tab" class="card tab-content">
     <h3>Lesson Resource & Reference Hub</h3>
-    <p class="muted">Access official course references below.</p>
+    <p class="muted">Access official course references and activity sheets below.</p>
     <div id="resource-list">
-      <!-- Resources injected by script.js -->
+      <!-- Resources injected by script -->
     </div>
   </div>
 
@@ -279,7 +320,7 @@ input, textarea, select {
   <div id="form-tab" class="card tab-content">
     <h3>Student Work Checkpoint & Reflection</h3>
     <form id="checkpoint-form" onsubmit="event.preventDefault(); window.print();">
-      <!-- Dynamic form fields injected by script.js -->
+      <!-- Dynamic form fields injected by script -->
       <button type="submit" class="submit-btn">Print this page and turn into the Red Basket!</button>
     </form>
   </div>
@@ -293,16 +334,16 @@ let bellringers = [];
 
 // Stock image pool for default visual slides
 const stockImagePool = [
-  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80', // Turtle / Nature
-  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80', // Water / Earth-Diver
-  'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80', // Ecology / Forest
-  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=300&q=80', // Campfire / Orality
-  'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=300&q=80', // Literature / History
-  'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=300&q=80'  // Writing Workshop
+  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80',
+  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80',
+  'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80',
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=300&q=80',
+  'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=300&q=80',
+  'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=300&q=80'
 ];
 
 // Emoji fallback pool
-const iconPool = ['🐢', '🌊', '🌱', '🗣️', '☯️', '📝'];
+const iconPool = ['⚖️', '📜', '🏛️', '💬', '📖', '✍️'];
 
 function renderSlides(slides) {
   const stage = document.getElementById('slide-stage');
@@ -313,9 +354,7 @@ function renderSlides(slides) {
     wrapper.className = 'slide' + (index === 0 ? ' active' : '');
     wrapper.id = `slide-${index + 1}`;
 
-    // Priority 1: slide.image OR Stock Web Image
     const imageUrl = slide.image || stockImagePool[index % stockImagePool.length];
-    // Fallback: slide.icon OR Emoji Pool
     const fallbackEmoji = slide.icon || iconPool[index % iconPool.length];
 
     const visualMediaHTML = `
@@ -347,6 +386,7 @@ function renderSlides(slides) {
     stage.appendChild(wrapper);
   });
 }
+
 function initLesson(data) {
   bellringers = data.bellringers || [];
   totalSlides = (data.slides || []).length || 1;
@@ -388,19 +428,15 @@ function renderResources(resources) {
   if (Array.isArray(resources)) {
     resourceList = resources;
   } else if (resources && typeof resources === 'object') {
-    if (Array.isArray(resources.buttons)) {
+    if (Array.isArray(resources.items)) {
+      resourceList = resources.items;
+    } else if (Array.isArray(resources.buttons)) {
       resourceList = resources.buttons;
     } else if (Array.isArray(resources.files)) {
       resourceList = resources.files;
-    } else if (Array.isArray(resources.items)) {
-      resourceList = resources.items;
     } else if (resources.file || resources.link || resources.url) {
       resourceList = [resources];
     }
-  }
-
-  if (!resourceList.length && resources && typeof resources === 'object' && resources.title && (resources.file || resources.link || resources.url)) {
-    resourceList = [resources];
   }
 
   resourceList.forEach(res => {
@@ -409,14 +445,11 @@ function renderResources(resources) {
 
     if (typeof res === 'string') {
       const cleanText = res.trim();
-      const isFile = /\.(pdf|docx?|pptx?|xlsx?)$/i.test(cleanText);
-      if (!isFile) return;
-
       const label = cleanText.split('/').pop();
       card.innerHTML = `
         <div>
           <strong>${label}</strong><br/>
-          <small>Repository file</small>
+          <small>Course Resource PDF</small>
         </div>
         <a href="${cleanText}" target="_blank" rel="noopener noreferrer" class="ctrl-btn">Open Resource</a>
       `;
@@ -425,13 +458,12 @@ function renderResources(resources) {
     }
 
     const resourceUrl = res.file || res.link || res.url || res.href || '#';
-    const resourceTitle = res.title || res.name || res.label || 'Resource Item';
-    const resourceDescription = res.description || res.summary || '';
-    const fileName = resourceUrl && typeof resourceUrl === 'string' ? resourceUrl.split('/').pop() : '';
+    const resourceTitle = res.label || res.title || res.name || 'Resource Item';
+    const resourceDescription = res.description || res.summary || 'Official Course Material';
 
     card.innerHTML = `
       <div>
-        <strong>${resourceTitle || fileName || 'Resource Item'}</strong><br/>
+        <strong>${resourceTitle}</strong><br/>
         <small>${resourceDescription}</small>
       </div>
       ${resourceUrl && resourceUrl !== '#' ? `<a href="${resourceUrl}" target="_blank" rel="noopener noreferrer" class="ctrl-btn">Open Resource</a>` : ''}
@@ -451,30 +483,45 @@ function renderForm(fields) {
     const group = document.createElement('div');
     group.className = 'form-group';
 
-    const label = field.label || field.prompt || `Question ${field.field_id || ''}`.trim() || 'Question';
-    const id = `field_${(field.field_id || label).toString().replace(/\s+/g, '_').toLowerCase()}`;
+    const labelText = field.label || field.prompt || `Question ${field.field_id || ''}`.trim();
+    const id = `field_${(field.field_id || labelText).toString().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '').toLowerCase()}`;
+    
+    const subtextHTML = field.subtext ? `<div class="field-subtext">${field.subtext}</div>` : '';
+    const placeholderText = field.placeholder || '';
 
     let inputHTML = '';
+
     if (field.type === 'short_answer' || field.type === 'short_text' || field.type === 'text') {
-      inputHTML = `<input type="text" id="${id}" ${field.required ? 'required' : ''} />`;
+      inputHTML = `<input type="text" id="${id}" name="${id}" placeholder="${placeholderText}" ${field.required ? 'required' : ''} />`;
     } else if (field.type === 'date') {
-      inputHTML = `<input type="date" id="${id}" ${field.required ? 'required' : ''} />`;
+      inputHTML = `<input type="date" id="${id}" name="${id}" ${field.required ? 'required' : ''} />`;
     } else if (field.type === 'long_text' || field.type === 'quote_citation' || field.type === 'reflection') {
-      inputHTML = `<textarea id="${id}" rows="5" ${field.required ? 'required' : ''}></textarea>`;
+      inputHTML = `<textarea id="${id}" name="${id}" rows="4" placeholder="${placeholderText}" ${field.required ? 'required' : ''}></textarea>`;
     } else if (field.type === 'multiple_choice' || field.type === 'true_false') {
       const options = field.type === 'true_false' ? ['True', 'False'] : (field.options || []);
-      inputHTML = options.map((option, index) => `<label><input type="radio" id="${id}_${index}" name="${id}" value="${option}" ${field.required ? 'required' : ''} /> ${option}</label>`).join('<br/>');
-    } else if (field.type === 'checkbox') {
-      inputHTML = (field.options || []).map((option, index) => `<label><input type="checkbox" id="${id}_${index}" name="${id}" value="${option}" /> ${option}</label>`).join('<br/>');
-    } else if (field.type === 'rating_scale') {
-      inputHTML = `<select id="${id}">${(field.options || []).map(o => `<option>${o}</option>`).join('')}</select>`;
-    } else if (field.type === 'select_rubric') {
-      inputHTML = `<select id="${id}"><option>-- Select Rubric Benchmark Level --</option>${(field.options || []).map(o => `<option>${o}</option>`).join('')}</select>`;
-    } else if (field.type === 'checkbox_group' || field.type === 'multi_select') {
-      inputHTML = (field.options || []).map(o => `<label><input type="checkbox" name="${id}" value="${o}" /> ${o}</label>`).join('<br/>');
+      inputHTML = options.map((option, index) => 
+        `<label class="option-choice">
+          <input type="radio" id="${id}_${index}" name="${id}" value="${option.replace(/"/g, '&quot;')}" ${field.required ? 'required' : ''} />
+          <span>${option}</span>
+        </label>`
+      ).join('');
+    } else if (field.type === 'checkbox' || field.type === 'checkbox_group' || field.type === 'multi_select') {
+      const options = field.options || [];
+      inputHTML = options.map((option, index) => 
+        `<label class="option-choice">
+          <input type="checkbox" id="${id}_${index}" name="${id}" value="${option.replace(/"/g, '&quot;')}" />
+          <span>${option}</span>
+        </label>`
+      ).join('');
+    } else if (field.type === 'rating_scale' || field.type === 'select_rubric') {
+      const options = field.options || [];
+      inputHTML = `<select id="${id}" name="${id}" ${field.required ? 'required' : ''}>
+        <option value="">-- Select an option --</option>
+        ${options.map(o => `<option value="${o.replace(/"/g, '&quot;')}">${o}</option>`).join('')}
+      </select>`;
     }
 
-    group.innerHTML = `<label for="${id}">${label}</label>${inputHTML}`;
+    group.innerHTML = `<label class="field-label" for="${id}">${labelText}</label>${subtextHTML}${inputHTML}`;
     form.appendChild(group);
   });
 
@@ -496,7 +543,263 @@ function switchTab(key) {
     document.getElementById('form-tab').classList.add('active');
   }
 }
-window.addEventListener('DOMContentLoaded', () => initLesson({"course_title": "English 11: American Literature", "unit": "Unit 4 - The Crucible: Ethical Confrontation", "day": 16, "week": 4, "weekly_focus": "Investigating the impact of the court's proceedings on domestic relationships and legal peril (MN State ELA Standards: 11.1.4.3 & 11.1.4.1).", "bellringers": ["Identify one logical fallacy used by Deputy Governor Danforth to defend spectral evidence in Act III.", "How does the courtroom setting alter the power dynamic between Abigail Williams and Mary Warren?", "Quick-write: Is Danforth motivated by a genuine desire for justice or a protection of judicial authority?", "Examine Giles Corey's refusal to name his informant. What ethical principle guides his choice?"], "slides": [{"title": "Act III: The Legal Crisis & Judicial Integrity", "standard": "MN State ELA Standard 11.1.4.3", "bullets": ["Analyze how the physical transition to the Salem meeting house signals an escalation of judicial authority.", "Examine the erosion of objective evidence in favor of theological authority and spectral claims.", "Evaluate how Arthur Miller critiques the corruption of legal systems through authoritarian paranoia."], "callout": "Key Focus: How does the court transform private paranoia into sanctioned state tyranny?"}, {"title": "Danforth's Absolutism & Spectral Logic", "standard": "MN State ELA Standard 11.1.4.1", "bullets": ["Deconstruct Danforth's assertion that witchcraft is an invisible crime with only two witnesses.", "Analyze the logical fallacy of relying solely on the victim's testimony in witch trials.", "Cite textual evidence showing how Danforth rejects legal counsel for the accused."], "callout": "Flawed Logic: Assuming the accuser is incapable of lying creates an unbreakable trap."}, {"title": "Ad Hominem Attacks & Guilt by Association", "standard": "MN State ELA Standard 11.1.4.3", "bullets": ["Examine how Parris uses John Proctor's Sunday plowing to discredit his character.", "Analyze Cheever's role in testifying to Proctor's minor religious infractions.", "Evaluate how the court uses personal character attacks to distract from substantive evidence."], "callout": "Fallacy Alert: Attacking the witness's habits rather than addressing their evidence."}, {"title": "Francis Nurse & The 91 Petitioners", "standard": "MN State ELA Standard 11.1.4.1", "bullets": ["Trace the fate of the 91 landowning citizens who signed a declaration of good character.", "Analyze Danforth's immediate order to issue warrants for all 91 signatories.", "Cite evidence demonstrating how public support for the accused is framed as court opposition."], "callout": "Thematic Choice: In a totalizing system, neutrality and support for victims are criminalized."}, {"title": "Giles Corey's Legal Strategy & Contempt", "standard": "MN State ELA Standard 11.1.4.3", "bullets": ["Examine Giles Corey's deposition alleging Thomas Putnam is buying up forfeited land.", "Analyze Corey's legal experience in Salem courts and his refusal to reveal his source.", "Evaluate the consequences of Corey's silence on the court's proceedings."], "callout": "Character Integrity: Corey protects others by withholding names despite legal peril."}, {"title": "Mary Warren's Deposition & Social Pressure", "standard": "MN State ELA Standard 11.1.4.1", "bullets": ["Deconstruct Mary Warren's written statement declaring the girls' fainting was pretense.", "Analyze Danforth's requirement that Mary faint on demand to prove her prior deception.", "Cite dialogue showing how intense peer pressure from Abigail undermines Mary's resolve."], "callout": "Psychological Isolation: Truth requires support that Mary lacks under cross-examination."}, {"title": "Abigail's Countermeasure: The Yellow Bird", "standard": "MN State ELA Standard 11.1.4.3", "bullets": ["Analyze how Abigail creates a visual hallucination to deflect Mary's accusations.", "Examine the synchronized mimicking of Mary's voice by the afflictive girls.", "Evaluate Miller's depiction of mob psychology overriding individual logic."], "callout": "Dramatic Tension: The power of performative hysteria to override written evidence."}, {"title": "Proctor's Confession: Sacrificing Reputation", "standard": "MN State ELA Standard 11.1.4.1", "bullets": ["Deconstruct John Proctor's public confession of lechery to expose Abigail's motive.", "Analyze Proctor's declaration: 'I have known her, sir. I have known her.'", "Cite textual evidence showing Proctor's willingness to ruin his public name for truth."], "callout": "Thematic Climax: Personal disgrace becomes the ultimate weapon against corruption."}, {"title": "Elizabeth's Deception & Tragic Irony", "standard": "MN State ELA Standard 11.1.4.3", "bullets": ["Analyze Danforth's test: questioning Elizabeth while forbidding Proctor and Abigail from speaking.", "Examine Elizabeth's internal conflict between protecting her husband and telling the truth.", "Evaluate the dramatic irony of Elizabeth's first lie occurring when truth was required."], "callout": "Tragic Irony: Elizabeth's devotion to John inadvertently dooms them both."}, {"title": "Reverend Hale's Denunciation", "standard": "MN State ELA Standard 11.1.4.1", "bullets": ["Trace Reverend Hale's growing realization of the court's fundamental injustice.", "Analyze Hale's explicit rejection of the proceedings: 'I quit this court!'", "Cite quotes showing Hale's transformation from dogmatic expert to conscientious objector."], "callout": "Character Shift: Hale abdicates theological authority after witnessing systemic corruption."}, {"title": "Critiquing the Courtroom: Logical Fallacies", "standard": "MN State ELA Standard 11.1.4.1", "bullets": ["Categorize fallacies found in Act III: Circular reasoning, false dilemma, and ad hominem.", "Analyze how Danforth uses false dilemmas ('either with this court or against it').", "Synthesize how bad logic serves to consolidate unchecked institutional power."], "callout": "Matrix Application: Map each fallacy to its specific speaker and political purpose."}, {"title": "Synthesis: The Erosion of Judicial Integrity", "standard": "MN State ELA Standard 11.1.4.3", "bullets": ["Synthesize how Act III demonstrates the collapse of legal safeguards in Salem.", "Examine the conflict between personal conscience and official state authority.", "Prepare analysis for the fictional judicial proceeding critique activity."], "callout": "Deliverable: Completed Logical Fallacies Matrix & Courtroom Critique Worksheet."}], "resources": {"title": "Act III Legal Crisis Reference & Matrix", "description": "Handouts and graphic organizers for analyzing logical fallacies and judicial integrity in Act III.", "items": [{"label": "Logical Fallacies Matrix PDF", "file": "Logical_Fallacies_Matrix.pdf"}, {"label": "Critiquing the Courtroom Activity Sheet PDF", "file": "Critiquing_the_Courtroom_Fictional_Judicial_Proceeding.pdf"}]}, "form": [{"field_id": 1, "type": "short_answer", "label": "Student Name & Class Period", "placeholder": "Enter your full name and period...", "required": true}, {"field_id": 2, "type": "multiple_choice", "label": "1. Judicial Logic Check (Multiple Choice)", "subtext": "What primary logical fallacy does Deputy Governor Danforth commit when arguing that witchcraft is an invisible crime?", "options": ["A) Begging the question / Circular reasoning by assuming the accusers cannot lie.", "B) Red herring by discussing agricultural prices in Salem.", "C) Appeal to authority by referencing European legal codes.", "D) Straw man by misrepresenting John Proctor's farm work."], "required": true}, {"field_id": 3, "type": "multiple_choice", "label": "2. Character Action Analysis (Multiple Choice)", "subtext": "Why is Giles Corey held in contempt of court by Deputy Governor Danforth?", "options": ["A) He physically assaults Reverend Parris during testimony.", "B) He refuses to disclose the name of the witness who overheard Thomas Putnam.", "C) He signs a petition supporting Elizabeth Proctor.", "D) He claims that the court judges are possessed by spirits."], "required": true}, {"field_id": 4, "type": "checkbox_group", "label": "3. Courtroom Tactics (Multi-Select)", "subtext": "Select ALL methods used by Reverend Parris and Judge Hathorne to discredit John Proctor's testimony:", "options": ["Highlighting that Proctor rarely attends church on the Sabbath.", "Pointing out that Proctor plows his fields on Sunday.", "Accusing Proctor of attempting to overthrow the court.", "Proving that Proctor gave the poppet to Abigail Williams."]}, {"field_id": 5, "type": "short_answer", "label": "4. Citation Practice: Danforth's False Dilemma", "subtext": "Quote or closely paraphrase Danforth's famous line regarding whether a person is with the court or against it.", "placeholder": "Enter line or paraphrase...", "required": true}, {"field_id": 6, "type": "reflection", "label": "5. Dramatic Irony Analysis", "subtext": "Explain the tragic irony of Elizabeth Proctor's testimony regarding John's affair with Abigail.", "placeholder": "Explain how her attempt to save John produces the opposite result...", "required": true}, {"field_id": 7, "type": "reflection", "label": "6. Hale's Transformation", "subtext": "Why does Reverend Hale officially denounce the court proceedings at the end of Act III?", "placeholder": "Analyze Hale's realization of the court's corruption...", "required": true}, {"field_id": 8, "type": "multiple_choice", "label": "7. Fallacy Identification", "subtext": "When Parris claims 'All innocent Christian people are happy for the court,' which fallacy is present?", "options": ["A) False Dichotomy / Sweeping Generalization", "B) Hasty Generalization", "C) Appeal to Ignorance", "D) Post Hoc Ergo Propter Hoc"], "required": true}, {"field_id": 9, "type": "reflection", "label": "8. Matrix Synthesis Question", "subtext": "Based on your Logical Fallacies Matrix, how does the court use fear to make illogical arguments acceptable to the public?", "placeholder": "Provide a 2-3 sentence synthesis...", "required": true}, {"field_id": 10, "type": "rating_scale", "label": "9. Self-Assessment: Critiquing Judicial Integrity", "subtext": "Rate your ability to identify logical fallacies in legal arguments:", "options": ["Level 4 - Advanced: I can identify fallacies and explain how they serve authoritarian power.", "Level 3 - Proficient: I can identify major fallacies like circular logic and ad hominem.", "Level 2 - Developing: I recognize unfair arguments but struggle to name the specific fallacy.", "Level 1 - Beginning: I need assistance separating valid evidence from flawed reasoning."], "required": true}]}));
+
+window.addEventListener('DOMContentLoaded', () => initLesson({
+  "course_title": "English 11: American Literature",
+  "unit": "Unit 4 - The Crucible: Ethical Confrontation",
+  "day": 16,
+  "week": 4,
+  "weekly_focus": "Investigating the impact of the court's proceedings on domestic relationships and legal peril (MN State ELA Standards: 11.1.4.3 & 11.1.4.1).",
+  "bellringers": [
+    "Identify one logical fallacy used by Deputy Governor Danforth to defend spectral evidence in Act III.",
+    "How does the courtroom setting alter the power dynamic between Abigail Williams and Mary Warren?",
+    "Quick-write: Is Danforth motivated by a genuine desire for justice or a protection of judicial authority?",
+    "Examine Giles Corey's refusal to name his informant. What ethical principle guides his choice?"
+  ],
+  "slides": [
+    {
+      "title": "Act III: The Legal Crisis & Judicial Integrity",
+      "standard": "MN State ELA Standard 11.1.4.3",
+      "bullets": [
+        "Analyze how the physical transition to the Salem meeting house signals an escalation of judicial authority.",
+        "Examine the erosion of objective evidence in favor of theological authority and spectral claims.",
+        "Evaluate how Arthur Miller critiques the corruption of legal systems through authoritarian paranoia."
+      ],
+      "callout": "Key Focus: How does the court transform private paranoia into sanctioned state tyranny?"
+    },
+    {
+      "title": "Danforth's Absolutism & Spectral Logic",
+      "standard": "MN State ELA Standard 11.1.4.1",
+      "bullets": [
+        "Deconstruct Danforth's assertion that witchcraft is an invisible crime with only two witnesses.",
+        "Analyze the logical fallacy of relying solely on the victim's testimony in witch trials.",
+        "Cite textual evidence showing how Danforth rejects legal counsel for the accused."
+      ],
+      "callout": "Flawed Logic: Assuming the accuser is incapable of lying creates an unbreakable trap."
+    },
+    {
+      "title": "Ad Hominem Attacks & Guilt by Association",
+      "standard": "MN State ELA Standard 11.1.4.3",
+      "bullets": [
+        "Examine how Parris uses John Proctor's Sunday plowing to discredit his character.",
+        "Analyze Cheever's role in testifying to Proctor's minor religious infractions.",
+        "Evaluate how the court uses personal character attacks to distract from substantive evidence."
+      ],
+      "callout": "Fallacy Alert: Attacking the witness's habits rather than addressing their evidence."
+    },
+    {
+      "title": "Francis Nurse & The 91 Petitioners",
+      "standard": "MN State ELA Standard 11.1.4.1",
+      "bullets": [
+        "Trace the fate of the 91 landowning citizens who signed a declaration of good character.",
+        "Analyze Danforth's immediate order to issue warrants for all 91 signatories.",
+        "Cite evidence demonstrating how public support for the accused is framed as court opposition."
+      ],
+      "callout": "Thematic Choice: In a totalizing system, neutrality and support for victims are criminalized."
+    },
+    {
+      "title": "Giles Corey's Legal Strategy & Contempt",
+      "standard": "MN State ELA Standard 11.1.4.3",
+      "bullets": [
+        "Examine Giles Corey's deposition alleging Thomas Putnam is buying up forfeited land.",
+        "Analyze Corey's legal experience in Salem courts and his refusal to reveal his source.",
+        "Evaluate the consequences of Corey's silence on the court's proceedings."
+      ],
+      "callout": "Character Integrity: Corey protects others by withholding names despite legal peril."
+    },
+    {
+      "title": "Mary Warren's Deposition & Social Pressure",
+      "standard": "MN State ELA Standard 11.1.4.1",
+      "bullets": [
+        "Deconstruct Mary Warren's written statement declaring the girls' fainting was pretense.",
+        "Analyze Danforth's requirement that Mary faint on demand to prove her prior deception.",
+        "Cite dialogue showing how intense peer pressure from Abigail undermines Mary's resolve."
+      ],
+      "callout": "Psychological Isolation: Truth requires support that Mary lacks under cross-examination."
+    },
+    {
+      "title": "Abigail's Countermeasure: The Yellow Bird",
+      "standard": "MN State ELA Standard 11.1.4.3",
+      "bullets": [
+        "Analyze how Abigail creates a visual hallucination to deflect Mary's accusations.",
+        "Examine the synchronized mimicking of Mary's voice by the afflictive girls.",
+        "Evaluate Miller's depiction of mob psychology overriding individual logic."
+      ],
+      "callout": "Dramatic Tension: The power of performative hysteria to override written evidence."
+    },
+    {
+      "title": "Proctor's Confession: Sacrificing Reputation",
+      "standard": "MN State ELA Standard 11.1.4.1",
+      "bullets": [
+        "Deconstruct John Proctor's public confession of lechery to expose Abigail's motive.",
+        "Analyze Proctor's declaration: 'I have known her, sir. I have known her.'",
+        "Cite textual evidence showing Proctor's willingness to ruin his public name for truth."
+      ],
+      "callout": "Thematic Climax: Personal disgrace becomes the ultimate weapon against corruption."
+    },
+    {
+      "title": "Elizabeth's Deception & Tragic Irony",
+      "standard": "MN State ELA Standard 11.1.4.3",
+      "bullets": [
+        "Analyze Danforth's test: questioning Elizabeth while forbidding Proctor and Abigail from speaking.",
+        "Examine Elizabeth's internal conflict between protecting her husband and telling the truth.",
+        "Evaluate the dramatic irony of Elizabeth's first lie occurring when truth was required."
+      ],
+      "callout": "Tragic Irony: Elizabeth's devotion to John inadvertently dooms them both."
+    },
+    {
+      "title": "Reverend Hale's Denunciation",
+      "standard": "MN State ELA Standard 11.1.4.1",
+      "bullets": [
+        "Trace Reverend Hale's growing realization of the court's fundamental injustice.",
+        "Analyze Hale's explicit rejection of the proceedings: 'I quit this court!'",
+        "Cite quotes showing Hale's transformation from dogmatic expert to conscientious objector."
+      ],
+      "callout": "Character Shift: Hale abdicates theological authority after witnessing systemic corruption."
+    },
+    {
+      "title": "Critiquing the Courtroom: Logical Fallacies",
+      "standard": "MN State ELA Standard 11.1.4.1",
+      "bullets": [
+        "Categorize fallacies found in Act III: Circular reasoning, false dilemma, and ad hominem.",
+        "Analyze how Danforth uses false dilemmas ('either with this court or against it').",
+        "Synthesize how bad logic serves to consolidate unchecked institutional power."
+      ],
+      "callout": "Matrix Application: Map each fallacy to its specific speaker and political purpose."
+    },
+    {
+      "title": "Synthesis: The Erosion of Judicial Integrity",
+      "standard": "MN State ELA Standard 11.1.4.3",
+      "bullets": [
+        "Synthesize how Act III demonstrates the collapse of legal safeguards in Salem.",
+        "Examine the conflict between personal conscience and official state authority.",
+        "Prepare analysis for the fictional judicial proceeding critique activity."
+      ],
+      "callout": "Deliverable: Completed Logical Fallacies Matrix & Courtroom Critique Worksheet."
+    }
+  ],
+  "resources": {
+    "title": "Act III Legal Crisis Reference & Matrix",
+    "description": "Handouts and graphic organizers for analyzing logical fallacies and judicial integrity in Act III.",
+    "items": [
+      {
+        "label": "Logical Fallacies Matrix PDF",
+        "file": "Logical_Fallacies_Matrix.pdf",
+        "description": "Comprehensive reference matrix covering fallacies in the play and absent Puritan fallacies."
+      },
+      {
+        "label": "Critiquing the Courtroom Activity Sheet PDF",
+        "file": "Critiquing_the_Courtroom_Activity_Sheet.pdf",
+        "description": "Worksheet for evaluating Danforth's courtroom procedure, formulating objections, and grading judicial integrity."
+      }
+    ]
+  },
+  "form": [
+    {
+      "field_id": 1,
+      "type": "short_answer",
+      "label": "Student Name & Class Period",
+      "placeholder": "Enter your full name and period...",
+      "required": true
+    },
+    {
+      "field_id": 2,
+      "type": "multiple_choice",
+      "label": "1. Judicial Logic Check (Multiple Choice)",
+      "subtext": "What primary logical fallacy does Deputy Governor Danforth commit when arguing that witchcraft is an invisible crime?",
+      "options": [
+        "A) Begging the question / Circular reasoning by assuming the accusers cannot lie.",
+        "B) Red herring by discussing agricultural prices in Salem.",
+        "C) Appeal to authority by referencing European legal codes.",
+        "D) Straw man by misrepresenting John Proctor's farm work."
+      ],
+      "required": true
+    },
+    {
+      "field_id": 3,
+      "type": "multiple_choice",
+      "label": "2. Character Action Analysis (Multiple Choice)",
+      "subtext": "Why is Giles Corey held in contempt of court by Deputy Governor Danforth?",
+      "options": [
+        "A) He physically assaults Reverend Parris during testimony.",
+        "B) He refuses to disclose the name of the witness who overheard Thomas Putnam.",
+        "C) He signs a petition supporting Elizabeth Proctor.",
+        "D) He claims that the court judges are possessed by spirits."
+      ],
+      "required": true
+    },
+    {
+      "field_id": 4,
+      "type": "checkbox_group",
+      "label": "3. Courtroom Tactics (Multi-Select)",
+      "subtext": "Select ALL methods used by Reverend Parris and Judge Hathorne to discredit John Proctor's testimony:",
+      "options": [
+        "Highlighting that Proctor rarely attends church on the Sabbath.",
+        "Pointing out that Proctor plows his fields on Sunday.",
+        "Accusing Proctor of attempting to overthrow the court.",
+        "Proving that Proctor gave the poppet to Abigail Williams."
+      ]
+    },
+    {
+      "field_id": 5,
+      "type": "short_answer",
+      "label": "4. Citation Practice: Danforth's False Dilemma",
+      "subtext": "Quote or closely paraphrase Danforth's famous line regarding whether a person is with the court or against it.",
+      "placeholder": "Enter line or paraphrase...",
+      "required": true
+    },
+    {
+      "field_id": 6,
+      "type": "reflection",
+      "label": "5. Dramatic Irony Analysis",
+      "subtext": "Explain the tragic irony of Elizabeth Proctor's testimony regarding John's affair with Abigail.",
+      "placeholder": "Explain how her attempt to save John produces the opposite result...",
+      "required": true
+    },
+    {
+      "field_id": 7,
+      "type": "reflection",
+      "label": "6. Hale's Transformation",
+      "subtext": "Why does Reverend Hale officially denounce the court proceedings at the end of Act III?",
+      "placeholder": "Analyze Hale's realization of the court's corruption...",
+      "required": true
+    },
+    {
+      "field_id": 8,
+      "type": "multiple_choice",
+      "label": "7. Fallacy Identification",
+      "subtext": "When Parris claims 'All innocent Christian people are happy for the court,' which fallacy is present?",
+      "options": [
+        "A) False Dichotomy / Sweeping Generalization",
+        "B) Hasty Generalization",
+        "C) Appeal to Ignorance",
+        "D) Post Hoc Ergo Propter Hoc"
+      ],
+      "required": true
+    },
+    {
+      "field_id": 9,
+      "type": "reflection",
+      "label": "8. Matrix Synthesis Question",
+      "subtext": "Based on your Logical Fallacies Matrix, how does the court use fear to make illogical arguments acceptable to the public?",
+      "placeholder": "Provide a 2-3 sentence synthesis...",
+      "required": true
+    },
+    {
+      "field_id": 10,
+      "type": "rating_scale",
+      "label": "9. Self-Assessment: Critiquing Judicial Integrity",
+      "subtext": "Rate your ability to identify logical fallacies in legal arguments:",
+      "options": [
+        "Level 4 - Advanced: I can identify fallacies and explain how they serve authoritarian power.",
+        "Level 3 - Proficient: I can identify major fallacies like circular logic and ad hominem.",
+        "Level 2 - Developing: I recognize unfair arguments but struggle to name the specific fallacy.",
+        "Level 1 - Beginning: I need assistance separating valid evidence from flawed reasoning."
+      ],
+      "required": true
+    }
+  ]
+}));
 </script>
 </body>
 </html>
